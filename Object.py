@@ -1,0 +1,108 @@
+import pygame
+pygame.init()
+
+class Physics_Object:
+    def __init__(self, x_position, y_position, velocity_x=0, velocity_y=0,
+                 radius=0, mass=0, color=(255, 0, 0)):
+        self.x_position = x_position
+        self.y_position = y_position
+        self.velocity_x = velocity_x
+        self.velocity_y = velocity_y
+        self.radius = radius
+        self.mass = mass
+        self.color = color
+        self.acceleration_x = 0
+        self.acceleration_y = 0
+
+        # Dragging
+        self.dragging = False
+        self.drag_offset_x = 0
+        self.drag_offset_y = 0
+
+        # Resizing
+        self.resizing = False
+        self.resize_start_dist = 0
+        self.initial_radius = radius
+
+        # Hover states
+        self.hover_resize = False
+        self.hover_drag = False
+
+    def draw(self, surface):
+        # Draw main circle
+        pygame.draw.circle(surface, self.color,
+                           (int(self.x_position), int(self.y_position)),
+                           self.radius)
+
+        # If hover near edge → show resize ring
+        if self.hover_resize:
+            pygame.draw.circle(surface, (255, 255, 255),  # white highlight
+                               (int(self.x_position), int(self.y_position)),
+                               self.radius + 3, 2)
+
+    def apply_gravity_on(self,other_object,dt=0.5):
+        G = 1
+        distance = ((self.x_position - other_object.x_position) ** 2 + (self.y_position - other_object.y_position) ** 2)**0.5
+        if distance <1:
+            distance =1
+        direction_x, direction_y = (other_object.x_position - self.x_position) / distance, (other_object.y_position - self.y_position) / distance
+        force = G * (self.mass * other_object.mass) / (distance**2)
+
+
+        acc = G * other_object.mass / (distance**2)
+        self.acceleration_x += acc * direction_x
+        self.acceleration_y += acc * direction_y
+
+    def update_velocity(self, dt=0.5):
+        self.velocity_x += self.acceleration_x * dt
+        self.velocity_y += self.acceleration_y * dt
+
+    def update_position(self, dt=0.5):
+        self.x_position += self.velocity_x * dt
+        self.y_position += self.velocity_y * dt
+    
+    def check_collision_merge(self, other):
+        pass
+    
+    def check_collision_bounce(self, other, elasticity=0.9):
+        pass
+    
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEMOTION:
+            mouse_x, mouse_y = event.pos
+            dist = ((mouse_x - self.x_position) ** 2 +
+                    (mouse_y - self.y_position) ** 2) ** 0.5
+
+            # Update hover states
+            self.hover_resize = abs(dist - self.radius) <= 10
+            self.hover_drag = (dist < self.radius and not self.hover_resize)
+
+            # Dragging
+            if self.dragging:
+                self.x_position = mouse_x + self.drag_offset_x
+                self.y_position = mouse_y + self.drag_offset_y
+
+            # Resizing
+            if self.resizing:
+                self.radius = max(5, self.initial_radius + (dist - self.resize_start_dist))
+
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = event.pos
+            dist = ((mouse_x - self.x_position) ** 2 +
+                    (mouse_y - self.y_position) ** 2) ** 0.5
+
+            if self.hover_resize:
+                self.resizing = True
+                self.resize_start_dist = dist
+                self.initial_radius = self.radius
+            elif self.hover_drag:
+                self.dragging = True
+                self.drag_offset_x = self.x_position - mouse_x
+                self.drag_offset_y = self.y_position - mouse_y
+
+        elif event.type == pygame.MOUSEBUTTONUP:
+            self.dragging = False
+            self.resizing = False
+
+
+
