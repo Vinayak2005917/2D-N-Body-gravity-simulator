@@ -12,7 +12,7 @@ pygame.init()
 # Set up display
 WIDTH, HEIGHT = 1600, 900
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Basic Pygame Window")
+pygame.display.set_caption("2D N-Body Simulator")
 font = pygame.font.SysFont(None, 30)
 dt = 0.05
 iterations = 1000
@@ -27,14 +27,15 @@ selected_object_no = None
 add = utils.Button(20, 20, 150, 50, "Add", font, (150,0,0), (200,0,0))
 start = utils.Button(20, 80, 150, 50, "Start", font, (0,150,0), (0,200,0))
 reset = utils.Button(20, 140, 150, 50, "Reset", font, (0,0,150), (0,0,200))
-make_bake = utils.Button(20, 200, 150, 50, "Bake", font, (50,50,50), (70,70,70))
-run_bake = utils.Button(20, 260, 150, 50, "Run Bake", font, (50,50,50), (70,70,70))
+make_bake = utils.Button(1440,760, 150, 50, "Bake", font, (50,50,50), (70,70,70))
+run_bake = utils.Button(1440, 820, 150, 50, "Run Bake", font, (50,50,50), (70,70,70))
 
 #input feilds
-iterations_input_box = utils.InputBox(305, 145, 200, 30)
-Apply_iterations = utils.Button(515, 140, 80, 40, "Apply", font, (50,50,50), (70,70,70))
-dt_input_box = utils.InputBox(305, 195, 200, 30)
-Apply_dt = utils.Button(515, 190, 80, 40, "Apply", font, (50,50,50), (70,70,70))
+iterations_input_box = utils.InputBox(1300, 705, 200, 30)
+Apply_iterations = utils.Button(1510, 700, 80, 40, "Apply", font, (50,50,50), (70,70,70))
+
+dt_input_box = utils.InputBox(1300, 655, 200, 30)
+Apply_dt = utils.Button(1510, 650, 80, 40, "Apply", font, (50,50,50), (70,70,70))
 
 mass_input_box = utils.InputBox(85, 745, 200, 30)
 Apply_mass = utils.Button(300, 740, 80, 40, "Apply", font, (50,50,50), (70,70,70))
@@ -54,6 +55,7 @@ running = True
 temp = 0
 baked_positions = []
 run_bake_var = False
+box_size = 40
 
 # Main loop
 start_time = time.time()
@@ -129,26 +131,27 @@ while running:
 		horizontal_velocity_event = horizontal_velocity_input_box.handle_event(event)
 		horizontal_velocity_input = horizontal_velocity_input_box.get_text()
 
-	# Grid
-	pygame.draw.rect(screen, (255,255,255), pygame.Rect(WIDTH // 2 - 1, 0, 2, HEIGHT))  # center vertical
-	pygame.draw.rect(screen, (255,255,255), pygame.Rect(0, HEIGHT // 2 - 1, WIDTH, 2))  # center horizontal
 
-	# Smaller boxes
-	box_size = 40
+
+	# Grid origin = screen center
+	center_x = WIDTH // 2
+	center_y = HEIGHT // 2
+
+	# Draw center axes
+	pygame.draw.rect(screen, (255,255,255), pygame.Rect(center_x - 1, 0, 2, HEIGHT))  # center vertical
+	pygame.draw.rect(screen, (255,255,255), pygame.Rect(0, center_y - 1, WIDTH, 2))  # center horizontal
 
 	# Vertical lines
 	vertical_lines = []
-	edge_offset_x = 0
-	edge_offset_y = 10
-	for i in range(WIDTH // box_size + 1):
-		pos_x = i * box_size
-		vertical_lines.append(pygame.Rect(pos_x + edge_offset_x, 0, 1, HEIGHT))
+	for i in range(-WIDTH // (2*box_size), WIDTH // (2*box_size) + 1):
+		pos_x = center_x + i * box_size
+		vertical_lines.append(pygame.Rect(pos_x, 0, 1, HEIGHT))
 
 	# Horizontal lines
 	horizontal_lines = []
-	for i in range(HEIGHT // box_size + edge_offset_y):
-		pos_y = i * box_size
-		horizontal_lines.append(pygame.Rect(0, pos_y + edge_offset_y, WIDTH, 1))
+	for j in range(-HEIGHT // (2*box_size), HEIGHT // (2*box_size) + 1):
+		pos_y = center_y + j * box_size
+		horizontal_lines.append(pygame.Rect(0, pos_y, WIDTH, 1))
 
 	# Draw grid
 	for line in vertical_lines:
@@ -250,13 +253,20 @@ while running:
 	bake_state_info.draw(screen)
 	integrator = utils.Text(f"Integrator  :  Semi-Implicit  Euler  at  dt = {dt} and iterations = {iterations}", 200, 70, font, (255, 255, 255))
 	integrator.draw(screen)
-	iterations_change = utils.Text(f"Iterations:", 200, 150, font, (255, 255, 255))
+	iterations_change = utils.Text(f"Iterations:", 1190, 657, font, (255, 255, 255))
 	iterations_change.draw(screen)
-	dt_change = utils.Text(f"dt:", 275, 200, font, (255, 255, 255))
+	dt_change = utils.Text(f"dt:", 1270, 710, font, (255, 255, 255))
 	dt_change.draw(screen)
 
 	if selected_object_no is not None:
-		# --- Sync input boxes with object if not actively editing ---
+		Object_name = utils.Text(f"Object {selected_object_no + 1}", 20, 620, font, (255, 255, 255))
+		Object_name.draw(screen)
+		Object_x = utils.Text(f"X : {Objects_List[selected_object_no].x_position:.2f}", 20, 650, font, (255, 255, 255))
+		Object_x.draw(screen)
+		Object_y = utils.Text(f"Y : {Objects_List[selected_object_no].y_position:.2f}", 20, 680, font, (255, 255, 255))
+		Object_y.draw(screen)
+		Object_radius = utils.Text(f"Radius : {Objects_List[selected_object_no].radius:.2f}", 20, 710, font, (255, 255, 255))
+		Object_radius.draw(screen)
 		selected_obj = Objects_List[selected_object_no]
 		if not mass_input_box.if_selected():
 			mass_input_box.text = f"{selected_obj.mass:.2f}"

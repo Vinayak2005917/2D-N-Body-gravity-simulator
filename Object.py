@@ -1,5 +1,11 @@
 import pygame
 pygame.init()
+zoom_factor = 1.0
+zoom_step = 1.1
+def world_to_screen(x, y, center_x, center_y):
+	screen_x = center_x + (x - center_x) * zoom_factor
+	screen_y = center_y + (y - center_y) * zoom_factor
+	return screen_x, screen_y
 
 class Physics_Object:
     def __init__(self, x_position, y_position, velocity_x=0, velocity_y=0,
