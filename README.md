@@ -1,6 +1,7 @@
 # 2D N-Body Gravity Simulator
 
-![Screenshot](Test/screenshot.png)
+<img width="1602" height="939" alt="image" src="https://github.com/user-attachments/assets/ec201ed5-6605-421a-8875-3c8685a21b4c" />
+
 
 This project simulates the motion of multiple objects under gravity in 2D using Pygame. **It is currently under active development.**
 
