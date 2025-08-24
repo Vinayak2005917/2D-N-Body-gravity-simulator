@@ -45,6 +45,8 @@ class InputBox:
                     self.text += event.unicode
                 self.txt_surface = font.render(self.text, True, self.color)
         return None
+    def if_selected(self):
+        return self.active
 
     def draw(self, screen):
         # Draw text and box

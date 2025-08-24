@@ -41,7 +41,7 @@ class Physics_Object:
                                self.radius + 3, 2)
 
     def apply_gravity_on(self,other_object,dt=0.5):
-        G = 1
+        G = 6.6
         distance = ((self.x_position - other_object.x_position) ** 2 + (self.y_position - other_object.y_position) ** 2)**0.5
         if distance <1:
             distance =1
@@ -65,8 +65,13 @@ class Physics_Object:
         pass
     
     def check_collision_bounce(self, other, elasticity=0.9):
-        pass
-    
+        distance = ((self.x_position - other.x_position) ** 2 + (self.y_position - other.y_position) ** 2)**0.5
+        if distance <= self.radius + other.radius:
+            self.velocity_x = self.velocity_x * -elasticity
+            self.velocity_y = self.velocity_y * -elasticity
+            other.velocity_x = other.velocity_x * -elasticity
+            other.velocity_y = other.velocity_y * -elasticity
+
     def handle_event(self, event):
         if event.type == pygame.MOUSEMOTION:
             mouse_x, mouse_y = event.pos
@@ -103,6 +108,8 @@ class Physics_Object:
         elif event.type == pygame.MOUSEBUTTONUP:
             self.dragging = False
             self.resizing = False
-
-
-
+    def is_clicked(self, pos):
+        mouse_x, mouse_y = pos
+        dist = ((mouse_x - self.x_position) ** 2 +
+                (mouse_y - self.y_position) ** 2) ** 0.5
+        return dist <= self.radius

@@ -19,6 +19,8 @@ iterations = 1000
 
 #Object List
 Objects_List = []
+trail_list = []
+selected_object_no = None
 
 
 # button
@@ -31,9 +33,17 @@ run_bake = utils.Button(20, 260, 150, 50, "Run Bake", font, (50,50,50), (70,70,7
 #input feilds
 iterations_input_box = utils.InputBox(305, 145, 200, 30)
 Apply_iterations = utils.Button(515, 140, 80, 40, "Apply", font, (50,50,50), (70,70,70))
-
 dt_input_box = utils.InputBox(305, 195, 200, 30)
 Apply_dt = utils.Button(515, 190, 80, 40, "Apply", font, (50,50,50), (70,70,70))
+
+mass_input_box = utils.InputBox(85, 745, 200, 30)
+Apply_mass = utils.Button(300, 740, 80, 40, "Apply", font, (50,50,50), (70,70,70))
+vertical_velocity_input_box = utils.InputBox(200, 795, 200, 30)
+Apply_vertical_velocity = utils.Button(415, 790, 80, 40, "Apply", font, (50,50,50), (70,70,70))
+horizontal_velocity_input_box = utils.InputBox(220, 845, 200, 30)
+Apply_horizontal_velocity = utils.Button(435, 840, 80, 40, "Apply", font, (50,50,50), (70,70,70))
+
+
 
 
 #flags
@@ -64,6 +74,13 @@ while running:
 					radius=35,
 					mass=8000
 				))
+				trail_list.append([])
+
+			#finding which object is selected
+			for i, obj in enumerate(Objects_List):
+				if obj.is_clicked(event.pos):
+					selected_object_no = i
+					break
 
 			if start.is_clicked(event.pos, (1,0,0)):
 				sim_state = True
@@ -75,6 +92,8 @@ while running:
 				baked_state = False
 				temp = 0
 				baked_positions = []
+				selected_object_no = None
+				trail_list.clear()
 			if make_bake.is_clicked(event.pos, (1,0,0)):
 				baked = True
 				sim_state = False
@@ -87,6 +106,13 @@ while running:
 				iterations = int(iterations_input)
 			if Apply_dt.is_clicked(event.pos, (1,0,0)):
 				dt = float(dt_input)
+			if Apply_mass.is_clicked(event.pos, (1,0,0)) and selected_object_no is not None:
+				Objects_List[selected_object_no].mass = float(mass_input_box.get_text())
+			if Apply_vertical_velocity.is_clicked(event.pos, (1,0,0)) and selected_object_no is not None:
+				Objects_List[selected_object_no].velocity_y = float(vertical_velocity_input_box.get_text())
+			if Apply_horizontal_velocity.is_clicked(event.pos, (1,0,0)) and selected_object_no is not None:
+				Objects_List[selected_object_no].velocity_x = float(horizontal_velocity_input_box.get_text())
+
 
 		iterations_event = iterations_input_box.handle_event(event)
 		iterations_input = iterations_input_box.get_text()
@@ -94,6 +120,14 @@ while running:
 		dt_event = dt_input_box.handle_event(event)
 		dt_input = dt_input_box.get_text()
 
+		mass_event = mass_input_box.handle_event(event)
+		mass_input = mass_input_box.get_text()
+
+		vertical_velocity_event = vertical_velocity_input_box.handle_event(event)
+		vertical_velocity_input = vertical_velocity_input_box.get_text()
+
+		horizontal_velocity_event = horizontal_velocity_input_box.handle_event(event)
+		horizontal_velocity_input = horizontal_velocity_input_box.get_text()
 
 	# Grid
 	pygame.draw.rect(screen, (255,255,255), pygame.Rect(WIDTH // 2 - 1, 0, 2, HEIGHT))  # center vertical
@@ -122,20 +156,13 @@ while running:
 	for line in horizontal_lines:
 		pygame.draw.rect(screen, (50, 50, 50), line)
 
-
-
-	
-
-	add.draw(screen, pygame.mouse.get_pos())
-	start.draw(screen, pygame.mouse.get_pos())
-	reset.draw(screen, pygame.mouse.get_pos())
-	make_bake.draw(screen, pygame.mouse.get_pos())
-	Apply_iterations.draw(screen, pygame.mouse.get_pos())
-	Apply_dt.draw(screen, pygame.mouse.get_pos())
-
-	iterations_input_box.draw(screen)
-	dt_input_box.draw(screen)
-
+	if sim_state:
+		for i in range(len(Objects_List)):
+			trail_list[i].append((Objects_List[i].x_position, Objects_List[i].y_position))
+		for i in range(len(Objects_List)):
+			trail_list[i].append((Objects_List[i].x_position, Objects_List[i].y_position))
+			if len(trail_list[i]) > 1:
+				pygame.draw.lines(screen, (255, 255, 255), False, trail_list[i])
 
 	if baked:
 		bake.clean_bake()
@@ -163,7 +190,6 @@ while running:
 	if not run_bake_var:  # only draw normally if not replaying baked data
 		for i in Objects_List:
 			i.draw(screen)
-
 	
 
 	if sim_state:
@@ -209,11 +235,11 @@ while running:
 		for i in range(len(Objects_List)):
 			vx, vy = velocities[i]
 			speed = (vx**2 + vy**2)**0.5
-			Obj1_vel = utils.Text(f"Object {i+1} velocity : {abs(speed):.2f} km/s", 1200, 20+(i*25), font, (255, 255, 255))
+			Obj1_vel = utils.Text(f"Object {i+1} velocity : {abs(speed):.2f} km/s", 1300, 20+(i*25), font, (255, 255, 255))
 			Obj1_vel.draw(screen)
 	else:
 		for i in range(0,len(Objects_List)):
-			Obj1_vel = utils.Text(f"Object {i+1} velocity : {abs(Objects_List[i].velocity_x):.2f} km/s", 1200, 20+(i*25), font, (255, 255, 255))
+			Obj1_vel = utils.Text(f"Object {i+1} velocity : {abs(Objects_List[i].velocity_x):.2f} km/s", 1300, 20+(i*25), font, (255, 255, 255))
 			Obj1_vel.draw(screen)
 
 
@@ -229,10 +255,59 @@ while running:
 	dt_change = utils.Text(f"dt:", 275, 200, font, (255, 255, 255))
 	dt_change.draw(screen)
 
+	if selected_object_no is not None:
+		# --- Sync input boxes with object if not actively editing ---
+		selected_obj = Objects_List[selected_object_no]
+		if not mass_input_box.if_selected():
+			mass_input_box.text = f"{selected_obj.mass:.2f}"
+			mass_input_box.txt_surface = font.render(mass_input_box.text, True, (255,255,255))
+		if not vertical_velocity_input_box.if_selected():
+			vertical_velocity_input_box.text = f"{selected_obj.velocity_y:.2f}"
+			vertical_velocity_input_box.txt_surface = font.render(vertical_velocity_input_box.text, True, (255,255,255))
+		if not horizontal_velocity_input_box.if_selected():
+			horizontal_velocity_input_box.text = f"{selected_obj.velocity_x:.2f}"
+			horizontal_velocity_input_box.txt_surface = font.render(horizontal_velocity_input_box.text, True, (255,255,255))
+		mass_text = utils.Text(f"Mass:", 20, 750, font, (255, 255, 255))
+		mass_text.draw(screen)
+		if not mass_input_box.if_selected():
+			mass_value = utils.Text(f"{Objects_List[selected_object_no].mass:.2f}", 90, 750, font, (255, 255, 255))
+			mass_value.draw(screen)
+
+		vertical_velocity_text = utils.Text(f"Vertical Velocity:", 20, 800, font, (255, 255, 255))
+		vertical_velocity_text.draw(screen)
+		if not vertical_velocity_input_box.if_selected():
+			vertical_velocity_value = utils.Text(f"{Objects_List[selected_object_no].velocity_y:.2f}", 205, 800, font, (255, 255, 255))
+			vertical_velocity_value.draw(screen)
+
+		horizontal_velocity_text = utils.Text(f"Horizontal Velocity:", 20, 850, font, (255, 255, 255))
+		horizontal_velocity_text.draw(screen)
+		if not horizontal_velocity_input_box.if_selected():
+			horizontal_velocity_value = utils.Text(f"{Objects_List[selected_object_no].velocity_x:.2f}", 225, 850, font, (255, 255, 255))
+			horizontal_velocity_value.draw(screen)
+
+		Apply_mass.draw(screen, pygame.mouse.get_pos())
+		mass_input_box.draw(screen)
+
+		Apply_vertical_velocity.draw(screen, pygame.mouse.get_pos())
+		vertical_velocity_input_box.draw(screen)
+
+		Apply_horizontal_velocity.draw(screen, pygame.mouse.get_pos())
+		horizontal_velocity_input_box.draw(screen)
+
 	if sim_state and not run_bake_var:
 		elapsed_time = time.time() - start_time
 		timer = utils.Text(f"Time: {elapsed_time:.2f} s", 200, 95, font, (255, 255, 255))
 		timer.draw(screen)
+
+	add.draw(screen, pygame.mouse.get_pos())
+	start.draw(screen, pygame.mouse.get_pos())
+	reset.draw(screen, pygame.mouse.get_pos())
+	make_bake.draw(screen, pygame.mouse.get_pos())
+	Apply_iterations.draw(screen, pygame.mouse.get_pos())
+	Apply_dt.draw(screen, pygame.mouse.get_pos())
+
+	iterations_input_box.draw(screen)
+	dt_input_box.draw(screen)
 
 
 	pygame.display.flip()

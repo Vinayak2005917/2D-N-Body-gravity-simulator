@@ -100,6 +100,8 @@ while running:
     elapsed_time = time.time() - start_time
     timer = utils.Text(f"Time: {elapsed_time:.2f} s", 50, 100, font, (255, 255, 255))
     timer.draw(screen)
+    mass_text = utils.Text(f"Mass:", 50, 125, font, (255, 255, 255))
+    mass_text.draw(screen)
 
     pygame.display.flip()
     #clock.tick(60)  # Play at 60 FPS
