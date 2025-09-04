@@ -88,7 +88,62 @@ class Text:
         """Draw text to the screen."""
         screen.blit(self.surface, self.rect)
 
+class DropdownMenu:
+    def __init__(self, x, y, w, h, options, font, 
+                 main_color=(10,10,10), hover_color=(50,50,50),
+                 text_color=(255, 255, 255)):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.font = font
+        self.options = options
+        self.selected = options[0] if options else ""
+        self.main_color = main_color
+        self.hover_color = hover_color
+        self.text_color = text_color
 
+        self.open = False  # dropdown expanded/collapsed
+
+    def handle_event(self, event, mouse_pos, mouse_pressed):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.rect.collidepoint(mouse_pos):
+                # Toggle open/close
+                self.open = not self.open
+            elif self.open:
+                # Check if clicked on an option
+                for i, option in enumerate(self.options):
+                    option_rect = pygame.Rect(
+                        self.rect.x, self.rect.y + (i + 1) * self.rect.height,
+                        self.rect.width, self.rect.height
+                    )
+                    if option_rect.collidepoint(mouse_pos):
+                        self.selected = option
+                        self.open = False
+                        return option
+                self.open = False
+        return None
+
+    def draw(self, screen, mouse_pos):
+        # Draw main box
+        color = self.hover_color if self.rect.collidepoint(mouse_pos) else self.main_color
+        pygame.draw.rect(screen, color, self.rect)
+        text_surf = self.font.render(self.selected, True, self.text_color)
+        screen.blit(text_surf, text_surf.get_rect(center=self.rect.center))
+
+        # Draw options if open
+        if self.open:
+            for i, option in enumerate(self.options):
+                option_rect = pygame.Rect(
+                    self.rect.x, self.rect.y + (i + 1) * self.rect.height,
+                    self.rect.width, self.rect.height
+                )
+                color = self.hover_color if option_rect.collidepoint(mouse_pos) else self.main_color
+                pygame.draw.rect(screen, color, option_rect)
+                opt_surf = self.font.render(option, True, self.text_color)
+                screen.blit(opt_surf, opt_surf.get_rect(center=option_rect.center))
+
+    def get_selected(self):
+        return self.selected
+    
+    
 """
 ================================================================================
 Pygame UI Elements: Button, InputBox, Text

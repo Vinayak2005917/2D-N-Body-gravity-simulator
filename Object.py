@@ -1,7 +1,10 @@
 import pygame
+import math
+
 pygame.init()
 zoom_factor = 1.0
 zoom_step = 1.1
+
 def world_to_screen(x, y, center_x, center_y):
 	screen_x = center_x + (x - center_x) * zoom_factor
 	screen_y = center_y + (y - center_y) * zoom_factor
@@ -47,7 +50,7 @@ class Physics_Object:
                                self.radius + 3, 2)
 
     def apply_gravity_on(self,other_object,dt=0.5):
-        G = 6.6
+        G = 66.743
         distance = ((self.x_position - other_object.x_position) ** 2 + (self.y_position - other_object.y_position) ** 2)**0.5
         if distance <1:
             distance =1
@@ -67,9 +70,44 @@ class Physics_Object:
         self.x_position += self.velocity_x * dt
         self.y_position += self.velocity_y * dt
     
-    def check_collision_merge(self, other):
-        pass
-    
+    def check_collision_merge(self, other, Object_List):
+        distance = ((self.x_position - other.x_position) ** 2 + (self.y_position - other.y_position) ** 2) ** 0.5
+        if distance <= self.radius + other.radius and self is not other:
+            return True
+        else:
+            return False
+    def Collision_merge(self, other, Object_List):
+            #combine the two objects, make a new one, add it to the list, and remove the current ones
+            # Conservation of momentum
+            total_mass = self.mass + other.mass
+            new_velocity_x = (self.velocity_x * self.mass + other.velocity_x * other.mass) / total_mass
+            new_velocity_y = (self.velocity_y * self.mass + other.velocity_y * other.mass) / total_mass
+
+            # Volume conservation (assuming spheres)
+            new_radius = ((self.radius ** 3 + other.radius ** 3) ** (1/3))
+
+            # Update self
+            new_mass = total_mass
+            new_velocity_x = new_velocity_x
+            new_velocity_y = new_velocity_y
+            new_radius = new_radius
+
+
+            New_object = Physics_Object(
+                x_position=self.x_position,
+                y_position=self.y_position,
+                velocity_x=new_velocity_x,
+                velocity_y=new_velocity_y,
+                radius=new_radius,
+                mass=new_mass
+            )
+        
+            Object_List.remove(self)
+            Object_List.remove(other)
+            Object_List.append(New_object)
+
+            return Object_List
+
     def check_collision_bounce(self, other, elasticity=0.9):
         distance = ((self.x_position - other.x_position) ** 2 + (self.y_position - other.y_position) ** 2)**0.5
         if distance <= self.radius + other.radius:
