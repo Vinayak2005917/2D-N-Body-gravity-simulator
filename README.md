@@ -24,8 +24,9 @@ Real-time 2D n-body gravity simulator built with Pygame. The codebase now spans 
    - Create and activate a virtual environment
    - Install from requirements
    
-2. Run the app: launch `App.py`.
+2. Run the app: launch `App.py` (not main.py).
 3. Use the UI to add objects, start/stop, bake, and replay. Tune `dt` and `iterations` for speed/accuracy.
+4. Main.py is used for deploying purposes so please don't run that file
 
 ## Controls and UI
 - Buttons: Add, Start, Stop, Reset, Trail, Bake, Run Bake
